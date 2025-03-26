@@ -7,36 +7,37 @@
 
 using System;
 
-class GameMenu
+public class GameMenu
 {
-    public void ShowMenu()
+    public static void ShowMenu()
     {
         Console.WriteLine("Please select game mode.");
         Console.WriteLine("1. Human VS Human");
         Console.WriteLine("2. Human VS AI");
         Console.WriteLine("3. EXIT");
     }
-    public string PlayerChoice()
+    public static string PlayerChoice()
     {
         return Console.ReadLine();
     }
 
 }
 //I temperary create this class for the main, you can edit it. --Victor 
-class GameMode
+public class GameMode
 {
-    public void HumanVSHuman()
+    public static void HumanVSHuman()
     {
         Console.WriteLine("You choose Human VS Human");
         Console.WriteLine("Game Start!");
     }
-    public void HumanVSAI()
+    public static void HumanVSAI()
     {
         Console.WriteLine("You choose Human VS AI");
         Console.WriteLine("Game Start!");
     }
-    public void Exit()
+    public static void Exit()
     {
+        Console.WriteLine("Exiting Game, Bye!");
         return;
     }
 }
@@ -48,30 +49,28 @@ namespace Connect_Four
         static void Main(string[] args)
         {
             
-            GameMenu menu = new GameMenu();
             
-            GameMode mode=new GameMode();
-            bool chosing = true;
+            bool choosing = true;
             
 
-            while (chosing) 
+            while (choosing) 
             {
-                menu.ShowMenu();
-                string choice = menu.PlayerChoice();
+                GameMenu.ShowMenu();
+                string choice = GameMenu.PlayerChoice();
                 if (choice == "1")
                 {
-                    mode.HumanVSHuman();
-                    chosing = false;
+                    GameMode.HumanVSHuman();
+                    choosing = false;
                 }
                 else if (choice == "2")
                 {
-                    mode.HumanVSAI();
-                    chosing = false;
+                    GameMode.HumanVSAI();
+                    choosing = false;
                 }
                 else if (choice == "3") 
                 {
-                    mode.Exit();
-                    chosing = false;
+                    GameMode.Exit();
+                    choosing = false;
                 }
                 else 
                 {
