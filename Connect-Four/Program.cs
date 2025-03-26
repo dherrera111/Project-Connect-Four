@@ -4,54 +4,49 @@
     April 21, 2025
 */
 
-
 using System;
-
-public class GameMenu
-{
-    public static void ShowMenu()
-    {
-        Console.WriteLine("Please select game mode.");
-        Console.WriteLine("1. Human VS Human");
-        Console.WriteLine("2. Human VS AI");
-        Console.WriteLine("3. EXIT");
-    }
-    public static string PlayerChoice()
-    {
-        return Console.ReadLine();
-    }
-
-}
-//I temperary create this class for the main, you can edit it. --Victor 
-public class GameMode
-{
-    public static void HumanVSHuman()
-    {
-        Console.WriteLine("You choose Human VS Human");
-        Console.WriteLine("Game Start!");
-    }
-    public static void HumanVSAI()
-    {
-        Console.WriteLine("You choose Human VS AI");
-        Console.WriteLine("Game Start!");
-    }
-    public static void Exit()
-    {
-        Console.WriteLine("Exiting Game, Bye!");
-        return;
-    }
-}
 
 namespace Connect_Four
 {
+    public static class GameMenu
+    {
+        public static void ShowMenu()
+        {
+            Console.WriteLine("Please select game mode.");
+            Console.WriteLine("1. Human VS Human");
+            Console.WriteLine("2. Human VS AI");
+            Console.WriteLine("3. EXIT");
+        }
+        public static string PlayerChoice()
+        {
+            return Console.ReadLine();
+        }
+
+    }
+    
+    public static class GameMode
+    {
+        public static void HumanVSHuman()
+        {
+            Console.WriteLine("You choose Human VS Human");
+            Console.WriteLine("Game Start!");
+        }
+        public static void HumanVSAI()
+        {
+            Console.WriteLine("You choose Human VS AI");
+            Console.WriteLine("Game Start!");
+        }
+        public static void Exit()
+        {
+            Console.WriteLine("Exiting Game, Bye!");
+            return;
+        }
+    }//I temperary create this class for the main, you can edit it. --Victor 
     internal class Program
     {
         static void Main(string[] args)
-        {
-            
-            
-            bool choosing = true;
-            
+        {           
+            bool choosing = true;           
 
             while (choosing) 
             {
