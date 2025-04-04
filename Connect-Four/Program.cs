@@ -124,13 +124,13 @@ namespace Connect_Four
         {
             // Ask for Player 1's name (assigned 'X').
             Console.Write("Enter your name Player 1: ");
-            string playeName1 = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(playeName1))
+            string playerName1 = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(playerName1))
             {
-                playeName1 = "Connect 4 Player 1";
-                Console.WriteLine($"The system automatically set player 1 name to: '{playeName1}' ");
+                playerName1 = "Connect 4 Player 1";
+                Console.WriteLine($"The system automatically set player 1 name to: '{playerName1}' ");
             }
-            player1 = new HumanPlayer(playeName1, 'X');
+            player1 = new HumanPlayer(playerName1, 'X');
 
             //Ask for Player 2's name (assigned 'O').
             Console.Write("Enter your name Player 2: ");
@@ -144,10 +144,11 @@ namespace Connect_Four
         }
 
         /// <summary>
-        /// Start of the Game Loop
+        /// Start of the Game Loop - Human vs. Human Mode
         /// </summary>
         public void PlayTheGame()
         {
+            // Todo: Victor Leung - To implement Gameboard.DropDisk and get the row where it landed ...
             gameBoard.AskPlayerToDropDisk();
         }
     }
@@ -160,7 +161,7 @@ namespace Connect_Four
     /// The player details - parent class
     /// Defines the common properties and methods for all player types
     /// </summary>
-    public class Player
+    public abstract class Player
     {
         /// <summary>
         /// The player name
@@ -200,6 +201,12 @@ namespace Connect_Four
     }
 
     // TODO: To implement AI Player here...
+    public class AIPlayer : Player
+    {
+        public AIPlayer(string name, char disk) : base(name, disk)
+        {
+        }
+    }
 
     //=========================================================
     // 4: GAME BOARD CLASSES
@@ -307,5 +314,17 @@ namespace Connect_Four
                 Console.WriteLine("Invalid turn. Please enter a number between 1 and 7.");
             }
         }
+
+        /// <summary>
+        /// Drop Disk: Place a player's disk in the selected column
+        /// </summary>
+        /// <param name="col"></param>
+        /// <returns>The row where the disk landed</returns>
+        public int DropDisk(int col)
+        {
+            // TODO: Victor Leung...
+            return 0;
+        }
+        
     }
 }
