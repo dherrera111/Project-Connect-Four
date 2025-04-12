@@ -5,6 +5,7 @@
 */
 
 using System;
+using System.Threading;
 
 namespace Connect_Four
 {
@@ -114,7 +115,9 @@ namespace Connect_Four
         public HumanVsHumanHandler()
         {
             RegisterPlayers();
+
             gameBoard = new GameBoard();
+            gameBoard.InitializeBoard();
             gameBoard.SetupHumanVsHumanPlayers(player1, player2);
             isPlayerOneTurn = true; // make sure that player one goes first
             gameBoard.SetPlayerTurn(isPlayerOneTurn);
@@ -148,8 +151,33 @@ namespace Connect_Four
         /// </summary>
         public void PlayTheGame()
         {
-            // Todo: Victor Leung - To implement Gameboard.DropDisk and get the row where it landed ...
-            gameBoard.AskPlayerToDropDisk();
+            bool isPlayOver = false;
+
+            while (!isPlayOver) 
+            {
+                Console.Clear();
+                gameBoard.DisplayGameBoard(); // show the current board
+
+                int column = gameBoard.GetPlayerMove(); // get player's move
+
+                if (gameBoard.IsValidMove(column)) 
+                {
+                    int row = gameBoard.DropDisk(column); // get the row where it landed
+
+                    // check if win 
+
+                    // check if draw
+
+                    // else, plays continue
+                    isPlayerOneTurn = !isPlayerOneTurn; // switch to other player
+                    gameBoard.SetPlayerTurn(isPlayerOneTurn);
+                }
+                else
+                {
+                    Console.WriteLine("Invalid move. Please try again.");
+                    Thread.Sleep(1500); // Pause for 1.5 seconds before clearing
+                }
+            }
         }
     }
 
@@ -166,12 +194,12 @@ namespace Connect_Four
         /// <summary>
         /// The player name
         /// </summary>
-        public string Name { get; set; }
+        public string Name { get; }
 
         /// <summary>
         /// The disk - O or X
         /// </summary>
-        public char Disk { get; set; }
+        public char Disk { get; }
 
         /// <summary>
         /// Initializes a new player object
@@ -182,6 +210,15 @@ namespace Connect_Four
         {
             Name = name;
             Disk = disk;
+        }
+
+        /// <summary>
+        /// To display the player information
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return $"{Name} ({Disk})";
         }
     }
 
@@ -228,9 +265,8 @@ namespace Connect_Four
 
         public GameBoard()
         {
-            board = new char[ROWS, COLUMNS];
+            board = new char[ROWS, COLUMNS]; // 2D array
             InitializeBoard(); // fill it with # spaces
-            DisplayGameBoard(); // display the current game board
         }
 
         /// <summary>
@@ -262,7 +298,26 @@ namespace Connect_Four
 
                 for (int col = 0; col < COLUMNS; col++)
                 {
-                    Console.Write($" {board[row, col]} ");
+                    char cell = board[row, col];
+
+                    // Set color based on the cell value
+                    if (cell == 'X')
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                    }
+                    else if (cell == 'O')
+                    {
+                        Console.ForegroundColor = ConsoleColor.Blue;
+                    }
+                    else
+                    {
+                        Console.ResetColor(); // Default color
+                    }
+
+                    Console.Write($" {cell} ");
+
+                    // Reset color after each cell
+                    Console.ResetColor();
                 }
 
                 Console.WriteLine("|");
@@ -296,22 +351,21 @@ namespace Connect_Four
         /// Ask the current player to select a column
         /// </summary>
         /// <returns>The column selected by player</returns>
-        public int AskPlayerToDropDisk()
+        public int GetPlayerMove()
         {
             Player currentPlayer = _isPlayerOneTurn ? _player1 : _player2;
             Console.WriteLine($"\nYour turn, Player {currentPlayer.Name}.");
             Console.Write("Enter a column number (1-7) and press Enter: ");
 
-            while (true) // loop until valid input is entered
+            try
             {
-                string input = Console.ReadLine().Trim();
-
-                if (int.TryParse(input, out int column) && column >= 1 && column <= 7)
-                {
-                    return column;
-                }
-
-                Console.WriteLine("Invalid turn. Please enter a number between 1 and 7.");
+                // convert to indexing system the subtract 1
+                int column = Convert.ToInt32(Console.ReadLine()) - 1;
+                return column;
+            }
+            catch
+            {
+                return -1; // Return invalid column
             }
         }
 
@@ -322,9 +376,36 @@ namespace Connect_Four
         /// <returns>The row where the disk landed</returns>
         public int DropDisk(int col)
         {
-            // TODO: Victor Leung...
-            return 0;
+            int row = -1;
+
+            // start from the bottom row and move up til find empty cell
+            for (int i = ROWS - 1; i >= 0; i--)
+            {
+                if (board[i, col] == '#') // this is the empty cell
+                {
+                    // get the current player's disk, player 1 is X, player 2 is O
+                    Player currentPlayer = _isPlayerOneTurn ? _player1 : _player2;
+
+                    // place the player's symbol in the empty cell
+                    board[i, col] = currentPlayer.Disk;
+                    row = i; // row we placed the disk
+                    break;
+                }
+            }
+
+            return row;
         }
-        
+
+        public bool IsValidMove(int column)
+        {
+            // validte if the col within the board boundaries
+            if (column < 0 || column >= COLUMNS)
+            {
+                return false;
+            }
+
+            // check the column is empty
+            return board[0, column] == '#';
+        }
     }
 }
