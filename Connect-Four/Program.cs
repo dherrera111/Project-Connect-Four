@@ -5,6 +5,8 @@
 */
 
 using System;
+using System.Data;
+using System.Data.Common;
 
 namespace Connect_Four
 {
@@ -149,8 +151,14 @@ namespace Connect_Four
         public void PlayTheGame()
         {
             // Todo: Victor Leung - To implement Gameboard.DropDisk and get the row where it landed ...
-            gameBoard.AskPlayerToDropDisk();
+            while (true)
+            {
+               int col= gameBoard.AskPlayerToDropDisk();
+               int row = gameBoard.DropDisk(col-1);
+
+            }
         }
+        
     }
 
     //=========================================================
@@ -300,11 +308,16 @@ namespace Connect_Four
         {
             Player currentPlayer = _isPlayerOneTurn ? _player1 : _player2;
             Console.WriteLine($"\nYour turn, Player {currentPlayer.Name}.");
-            Console.Write("Enter a column number (1-7) and press Enter: ");
+            Console.Write("Enter a column number (1-7) or 'q' to surrender, then press Enter: ");//Added surrender
 
             while (true) // loop until valid input is entered
             {
                 string input = Console.ReadLine().Trim();
+
+                if(input == "q")
+                {
+                    GameEnd.Surrender(currentPlayer);
+                }
 
                 if (int.TryParse(input, out int column) && column >= 1 && column <= 7)
                 {
@@ -323,8 +336,56 @@ namespace Connect_Four
         public int DropDisk(int col)
         {
             // TODO: Victor Leung...
-            return 0;
+            for(int row = ROWS-1; row >= 0; row--)
+            {
+                if (board [row, col] == '#')
+                {
+                    Player currentPlayer = _isPlayerOneTurn ? _player1 : _player2;
+                    board[row, col] = currentPlayer.Disk;
+                    
+                    DisplayGameBoard();
+                    _isPlayerOneTurn=false;
+                    return row;
+                }
+                
+            }
+            Console.WriteLine("The column is full, please select another column!");
+            return -1;
         }
         
     }
+    public static class GameEnd
+    {
+        public const int ROWS = 6;
+        public const int COLUMNS = 7;
+        //Tie game
+        public static bool isTieGame(char[,] board)
+        {
+            for (int col=0; col < COLUMNS; col++)
+            {
+                if ((board [0, col] ) == '#')
+                {
+                    return false;//Game has not ended yet
+                }
+            }
+            return true;//No more '#' and no winner = Tie
+        }
+        //Surrender
+
+        public static void Surrender(Player player)
+        {
+            Console.WriteLine($"\n{player.Name} has surrendered. Game over.");
+            Environment.Exit(0);
+        }
+        //Check win
+        public static void CheckWin()
+        {
+            for (int row = ROWS - 1; row <= 0; row--)
+            {
+                //cant finish lol
+            }
+        }
+
+    }
+
 }
