@@ -60,7 +60,7 @@ namespace Connect_Four
     {
         public static void ShowMenu()
         {
-            Console.WriteLine("Welcome to Connect Four Game by Herrera & Leung Co.\n");
+            Console.WriteLine("======= Welcome to Connect Four Game by Herrera & Leung Co. ======= \n");
             Console.WriteLine("Please select game mode: \n");
             Console.WriteLine("1. Human vs Human mode");
             Console.WriteLine("2. Human vs AI mode");
@@ -104,10 +104,10 @@ namespace Connect_Four
     /// </summary>
     public class HumanVsHumanHandler
     {
-        private HumanPlayer player1; // 'X'
-        private HumanPlayer player2; // 'O'
-        private GameBoard gameBoard;
-        private bool isPlayerOneTurn;
+        private HumanPlayer _player1; // 'X'
+        private HumanPlayer _player2; // 'O'
+        private GameBoard _gameBoard;
+        private bool _isPlayerOneTurn;
 
         /// <summary>
         /// Constructor: Initialize a new human vs. human game
@@ -116,11 +116,11 @@ namespace Connect_Four
         {
             RegisterPlayers();
 
-            gameBoard = new GameBoard();
-            gameBoard.InitializeBoard();
-            gameBoard.SetupHumanVsHumanPlayers(player1, player2);
-            isPlayerOneTurn = true; // make sure that player one goes first
-            gameBoard.SetPlayerTurn(isPlayerOneTurn);
+            _gameBoard = new GameBoard();
+            _gameBoard.InitializeBoard();
+            _gameBoard.SetupHumanVsHumanPlayers(_player1, _player2);
+            _isPlayerOneTurn = true; // make sure that player one goes first
+            _gameBoard.SetPlayerTurn(_isPlayerOneTurn);
         }
 
         private void RegisterPlayers()
@@ -133,7 +133,7 @@ namespace Connect_Four
                 playerName1 = "Connect 4 Player 1";
                 Console.WriteLine($"The system automatically set player 1 name to: '{playerName1}' ");
             }
-            player1 = new HumanPlayer(playerName1, 'X');
+            _player1 = new HumanPlayer(playerName1, 'X');
 
             //Ask for Player 2's name (assigned 'O').
             Console.Write("Enter your name Player 2: ");
@@ -143,7 +143,7 @@ namespace Connect_Four
                 playeName2 = "Connect 4 Player 2";
                 Console.WriteLine($"The system automatically set player 2 name to: '{playeName2}' ");
             }
-            player2 = new HumanPlayer(playeName2, 'O');
+            _player2 = new HumanPlayer(playeName2, 'O');
         }
 
         /// <summary>
@@ -153,24 +153,30 @@ namespace Connect_Four
         {
             bool isPlayOver = false;
 
-            while (!isPlayOver) 
+            while (!isPlayOver)
             {
                 Console.Clear();
-                gameBoard.DisplayGameBoard(); // show the current board
+                _gameBoard.DisplayGameBoard(); // show the current board
 
-                int column = gameBoard.GetPlayerMove(); // get player's move
+                int column = _gameBoard.GetPlayerMove(); // get player's move
 
-                if (gameBoard.IsValidMove(column)) 
+                if (_gameBoard.IsValidMove(column))
                 {
-                    int row = gameBoard.DropDisk(column); // get the row where it landed
+                    int row = _gameBoard.DropDisk(column); // get the row where it landed
 
-                    // check if win 
-
+                    // check if win
+                    if (_gameBoard.IsLastMoveWin(row, column))
+                    {
+                        DisplayVictoryMessage();
+                        isPlayOver = true;
+                    }
                     // check if draw
-
-                    // else, plays continue
-                    isPlayerOneTurn = !isPlayerOneTurn; // switch to other player
-                    gameBoard.SetPlayerTurn(isPlayerOneTurn);
+                    else
+                    {
+                        // else, plays continue
+                        _isPlayerOneTurn = !_isPlayerOneTurn; // switch to other player
+                        _gameBoard.SetPlayerTurn(_isPlayerOneTurn);
+                    }
                 }
                 else
                 {
@@ -178,6 +184,36 @@ namespace Connect_Four
                     Thread.Sleep(1500); // Pause for 1.5 seconds before clearing
                 }
             }
+        }
+
+        private void DisplayVictoryMessage()
+        {
+            Console.Clear();
+            _gameBoard.DisplayGameBoard();
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+
+            // Display the congratulatory message with player info
+            Console.WriteLine($"\nVictory!\n");
+            Console.Write("Congratulations, ");
+
+            // Set the winner's disk color
+            if (_isPlayerOneTurn)
+            {
+                _gameBoard.SetDiskColor(_player1.Disk);
+                Console.Write($"{_player1.Name} ({_player1.Disk})");
+            }
+            else
+            {
+                _gameBoard.SetDiskColor(_player2.Disk);
+                Console.Write($"{_player2.Name} ({_player2.Disk})");
+            }
+
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("! You’re the Connect Four Champion!!!\n");
+            
+            // reset color
+            Console.ResetColor();
         }
     }
 
@@ -210,15 +246,6 @@ namespace Connect_Four
         {
             Name = name;
             Disk = disk;
-        }
-
-        /// <summary>
-        /// To display the player information
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            return $"{Name} ({Disk})";
         }
     }
 
@@ -289,6 +316,7 @@ namespace Connect_Four
         /// </summary>
         public void DisplayGameBoard()
         {
+            Console.WriteLine("======= Welcome to Connect Four Game by Herrera & Leung Co. =======");
             Console.WriteLine("\nConnect 4 Game Development Project: \n");
 
             // loop through each cell with the #
@@ -298,23 +326,10 @@ namespace Connect_Four
 
                 for (int col = 0; col < COLUMNS; col++)
                 {
-                    char cell = board[row, col];
+                    // set the disk color
+                    SetDiskColor(board[row, col]);
 
-                    // Set color based on the cell value
-                    if (cell == 'X')
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                    }
-                    else if (cell == 'O')
-                    {
-                        Console.ForegroundColor = ConsoleColor.Blue;
-                    }
-                    else
-                    {
-                        Console.ResetColor(); // Default color
-                    }
-
-                    Console.Write($" {cell} ");
+                    Console.Write($" {board[row, col]} ");
 
                     // Reset color after each cell
                     Console.ResetColor();
@@ -325,6 +340,28 @@ namespace Connect_Four
 
             // These are the column numbers at the bottom
             Console.WriteLine("  1  2  3  4  5  6  7  \n");
+        }
+
+        /// <summary>
+        /// To set the color of the disk
+        /// </summary>
+        /// <param name="disk"></param>
+        /// <returns></returns>
+        public void SetDiskColor(char disk)
+        {
+            // Set color based on the cell value
+            if (disk == 'X')
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
+            else if (disk == 'O')
+            {
+                Console.ForegroundColor = ConsoleColor.Blue;
+            }
+            else
+            {
+                Console.ResetColor(); // Default color
+            }
         }
 
         /// <summary>
@@ -354,7 +391,11 @@ namespace Connect_Four
         public int GetPlayerMove()
         {
             Player currentPlayer = _isPlayerOneTurn ? _player1 : _player2;
-            Console.WriteLine($"\nYour turn, Player {currentPlayer.Name}.");
+            Console.Write($"\nYour turn, Player {currentPlayer.Name} (");
+            SetDiskColor(currentPlayer.Disk);
+            Console.Write(currentPlayer.Disk);
+            Console.ResetColor();
+            Console.WriteLine(").");
             Console.Write("Enter a column number (1-7) and press Enter: ");
 
             try
@@ -396,6 +437,11 @@ namespace Connect_Four
             return row;
         }
 
+        /// <summary>
+        /// To check if the move is valid
+        /// </summary>
+        /// <param name="column"></param>
+        /// <returns></returns>
         public bool IsValidMove(int column)
         {
             // validte if the col within the board boundaries
@@ -406,6 +452,108 @@ namespace Connect_Four
 
             // check the column is empty
             return board[0, column] == '#';
+        }
+
+        /// <summary>
+        /// To check if the last move met the expectations
+        /// </summary>
+        /// <param name="row"></param>
+        /// <param name="col"></param>
+        /// <returns></returns>
+        public bool IsLastMoveWin(int row, int col)
+        {
+            char playerDisk = _isPlayerOneTurn ? _player1.Disk : _player2.Disk;
+
+            // ==================
+            // HORIZONTAL WINS (4 in a row, from left to right)
+            // ==================
+
+            int count = 0;
+
+            // Loop in columns from col - 1 to col + 3 = making sure that index stays within board
+            for(int i = Math.Max(0, col - 1); i <= Math.Min(col + 3, COLUMNS - 1); i++)
+            {
+                // check if the current cell at row contains the player disk
+                if (board[row, i] == playerDisk)
+                {
+                    count++; // increment the count
+                    if (count == 4) return true; // win
+                }
+                else
+                {
+                    // if the count series broken, then reset counter to 0
+                    count = 0;
+                }
+            }
+
+            // ==================
+            // VERTICAL WINS (4 in a row, from top to bottom)
+            // ==================
+            count = 0;
+
+            // Loop through from row - 3 to row + 3
+            for (int j = Math.Max(0, row - 3); j <= Math.Min(row + 3, ROWS - 1); j++)
+            {
+                // check the current cell contains the player disk
+                if (board[j, col] == playerDisk)
+                {
+                    count++; // increment
+                    if (count == 4) return true; // win
+                }
+                else
+                {
+                    // if the count series broken, then reset counter to 0
+                    count = 0;
+                }
+            }
+
+            // ==================
+            // DIAGONAL WINS (top left to bottom right)
+            // ==================
+            count = 0;
+            int startRow = row - Math.Min(row, col); // starting row position
+            int startCol = col - Math.Min(row, col); // starting col position
+
+            // Loop diagonal from the starting position, moving down and to the right
+            for (int i = 0; i < Math.Min(ROWS - startRow, COLUMNS - startCol); i++)
+            {
+                // check the current cell contains the player disk
+                if (board[startRow + i, startCol + i] == playerDisk)
+                {
+                    count++; // increment
+                    if (count == 4) return true; // win
+                }
+                else
+                {
+                    // if the count series broken, then reset counter to 0
+                    count = 0;
+                }
+            }
+
+            // ==================
+            // DIAGONAL WINS (top right to bottom left)
+            // ==================
+            count = 0;
+            startRow = row - Math.Min(row, COLUMNS - 1 - col); // starting row position
+            startCol = col + Math.Min(row, COLUMNS - 1 - col); // starting col position
+
+            // Loop diagonal from the starting position, moving down and to the left
+            for (int i = 0; i < Math.Min(ROWS - startRow, startCol + 1); i++)
+            {
+                // check the current cell contains the player disk
+                if (board[startRow + i, startCol - i] == playerDisk)
+                {
+                    count++; // increment
+                    if (count == 4) return true; // win
+                }
+                else
+                {
+                    // if the count series broken, then reset counter to 0
+                    count = 0;
+                }
+            }
+
+            return false; // no win
         }
     }
 }
