@@ -24,13 +24,36 @@ namespace Connect_Four
         /// <param name="args"></param>
         static void Main(string[] args)
         {
+            GameMenu.ShowMenu(); // show the game menu
+        }
+    }
+
+    /// <summary>
+    /// The game menu: displays the main menu and handles user selection
+    /// </summary>
+    public static class GameMenu
+    {
+        public static void ShowMenu()
+        {
             bool choosing = true;
+
+            Console.SetWindowSize(100, 30); // set the console app windows size
 
             while (choosing)
             {
-                GameMenu.ShowMenu();
-                Console.Write("Select from 1-3 then press Enter: ");
-                string choice = GameMenu.PlayerChoice();
+                Console.Clear();
+
+                SetGameMessage(ConsoleColor.Yellow, "======= Welcome to Connect Four Game by Herrera & Leung Co. =======\n");
+
+                SetGameMessage(ConsoleColor.Cyan, "Please select a game mode:\n");
+
+                SetGameMessage(ConsoleColor.Green, "1. Human vs Human mode");
+                SetGameMessage(ConsoleColor.Green, "2. Human vs AI mode");
+                SetGameMessage(ConsoleColor.Green, "3. Exit the game\n");
+
+                SetGameMessage(ConsoleColor.White, "Select an option (1-3) and hit Enter: ", false, false);
+
+                string choice = Console.ReadLine();
                 if (choice == "1")
                 {
                     GameMode.HumanVsHuman();
@@ -47,29 +70,60 @@ namespace Connect_Four
                 }
                 else
                 {
-                    Console.WriteLine("Invaild choice, please enter 1, 2, or 3");
+                    SetGameMessage(ConsoleColor.Red, "\nOops! That’s not a valid option. Please choose 1, 2, or 3.\n", true, false);
                 }
             }
         }
-    }
 
-    /// <summary>
-    /// The game menu: displays the main menu and handles user selection
-    /// </summary>
-    public static class GameMenu
-    {
-        public static void ShowMenu()
+        /// <summary>
+        /// To set the message, behavior and color in console
+        /// </summary>
+        /// <param name="color"></param>
+        /// <param name="message"></param>
+        /// <param name="isSleep"></param>
+        /// <param name="newLine"></param>
+        public static void SetGameMessage(ConsoleColor color, string message, bool isSleep = false, bool newLine = true)
         {
-            Console.WriteLine("======= Welcome to Connect Four Game by Herrera & Leung Co. ======= \n");
-            Console.WriteLine("Please select game mode: \n");
-            Console.WriteLine("1. Human vs Human mode");
-            Console.WriteLine("2. Human vs AI mode");
-            Console.WriteLine("3. Exit the game \n");
+            Console.ForegroundColor = color;
+
+            if (newLine)
+            {
+                Console.WriteLine(message);
+            }
+            else
+            {
+                Console.Write(message);
+            }
+
+            Console.ResetColor();
+
+            if (isSleep)
+            {
+                Thread.Sleep(1500);
+            }
         }
-        public static string PlayerChoice()
+
+        /// <summary>
+        ///  Set disk color
+        /// </summary>
+        /// <param name="disk"></param>
+        public static void DisplayMessageWithColor(char disk)
         {
-            return Console.ReadLine();
+            // Set color based on the cell value
+            if (disk == 'X')
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
+            else if (disk == 'O')
+            {
+                Console.ForegroundColor = ConsoleColor.Blue;
+            }
+            else
+            {
+                Console.ResetColor(); // Default color
+            }
         }
+
     }
 
     /// <summary>
@@ -77,20 +131,32 @@ namespace Connect_Four
     /// </summary>
     public static class GameMode
     {
+        /// <summary>
+        /// Human vs. Human
+        /// </summary>
         public static void HumanVsHuman()
         {
-            Console.Write("You chose Human vs Human \n");
+            GameMenu.SetGameMessage(ConsoleColor.DarkYellow, "\nYou chose Human vs Human mode — let the battle begin!\n");
+
             HumanVsHumanHandler game = new HumanVsHumanHandler();
             game.PlayTheGame();
         }
+
+        /// <summary>
+        /// Human vs. AI
+        /// </summary>
         public static void HumanVsAI()
         {
             Console.Write("You chose Human VS AI \n");
             Console.WriteLine("Game Start!");
         }
+
+        /// <summary>
+        /// Exit the game
+        /// </summary>
         public static void Exit()
         {
-            Console.WriteLine("Exiting Game, Bye!");
+            Console.WriteLine("\nExiting game... Thank you for playing Connect Four!");
             return;
         }
     }
@@ -169,19 +235,39 @@ namespace Connect_Four
                     {
                         DisplayVictoryMessage();
                         isPlayOver = true;
+
+                        // ask if players want to play again
+                        if (PlayAgain())
+                        {
+                            isPlayOver = false;
+                            _gameBoard.InitializeBoard();
+                            _gameBoard.SetPlayerTurn(true);
+                        }
                     }
-                    // check if draw
+                    // check if the board is full then it's draw
+                    else if (_gameBoard.IsDraw())
+                    {
+                        DisplayDrawMessage();
+                        isPlayOver = true;
+
+                        // ask if players want to play again
+                        if (PlayAgain())
+                        {
+                            isPlayOver = false;
+                            _gameBoard.InitializeBoard();
+                            _gameBoard.SetPlayerTurn(true);
+                        }
+                    }
+                    // play continues
                     else
                     {
-                        // else, plays continue
                         _isPlayerOneTurn = !_isPlayerOneTurn; // switch to other player
                         _gameBoard.SetPlayerTurn(_isPlayerOneTurn);
                     }
                 }
                 else
                 {
-                    Console.WriteLine("Invalid move. Please try again.");
-                    Thread.Sleep(1500); // Pause for 1.5 seconds before clearing
+                    GameMenu.SetGameMessage(ConsoleColor.Red, "\nOopppss.. Invalid move. Please try again.");
                 }
             }
         }
@@ -191,8 +277,6 @@ namespace Connect_Four
             Console.Clear();
             _gameBoard.DisplayGameBoard();
 
-            Console.ForegroundColor = ConsoleColor.Yellow;
-
             // Display the congratulatory message with player info
             Console.WriteLine($"\nVictory!\n");
             Console.Write("Congratulations, ");
@@ -200,20 +284,47 @@ namespace Connect_Four
             // Set the winner's disk color
             if (_isPlayerOneTurn)
             {
-                _gameBoard.SetDiskColor(_player1.Disk);
+                GameMenu.DisplayMessageWithColor(_player1.Disk);
                 Console.Write($"{_player1.Name} ({_player1.Disk})");
             }
             else
             {
-                _gameBoard.SetDiskColor(_player2.Disk);
+                GameMenu.DisplayMessageWithColor(_player2.Disk);
                 Console.Write($"{_player2.Name} ({_player2.Disk})");
             }
 
-            Console.ForegroundColor = ConsoleColor.Yellow;
             Console.WriteLine("! You’re the Connect Four Champion!!!\n");
             
             // reset color
             Console.ResetColor();
+        }
+
+        private void DisplayDrawMessage()
+        {
+            Console.Clear();
+            _gameBoard.DisplayGameBoard();
+
+            GameMenu.SetGameMessage(ConsoleColor.DarkYellow, "\nIt's a Draw!\n");
+            GameMenu.SetGameMessage(ConsoleColor.Yellow, "Great game, and well played to both challengers!");
+        }
+
+        private bool PlayAgain()
+        {
+            GameMenu.SetGameMessage(ConsoleColor.White, "\nDo you want to play again? (Y/N): ", false, false);
+
+            string input = Console.ReadLine().Trim();
+
+            if (input.Equals("Y", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            else
+            {
+                GameMenu.SetGameMessage(ConsoleColor.DarkYellow, "\nThank you for playing Connect Four! Returning to the Game Menu... Please wait.", true, true);
+                Console.Clear();
+                GameMenu.ShowMenu();
+            }
+            return false;
         }
     }
 
@@ -316,8 +427,9 @@ namespace Connect_Four
         /// </summary>
         public void DisplayGameBoard()
         {
-            Console.WriteLine("======= Welcome to Connect Four Game by Herrera & Leung Co. =======");
-            Console.WriteLine("\nConnect 4 Game Development Project: \n");
+            GameMenu.SetGameMessage(ConsoleColor.Yellow, "======= Welcome to Connect Four Game by Herrera & Leung Co. =======\n");
+            
+            GameMenu.SetGameMessage(ConsoleColor.DarkYellow, "\nConnect 4 Game Development Project:\n");
 
             // loop through each cell with the #
             for (int row = 0; row < ROWS; row++)
@@ -327,7 +439,7 @@ namespace Connect_Four
                 for (int col = 0; col < COLUMNS; col++)
                 {
                     // set the disk color
-                    SetDiskColor(board[row, col]);
+                    GameMenu.DisplayMessageWithColor(board[row, col]);
 
                     Console.Write($" {board[row, col]} ");
 
@@ -342,27 +454,6 @@ namespace Connect_Four
             Console.WriteLine("  1  2  3  4  5  6  7  \n");
         }
 
-        /// <summary>
-        /// To set the color of the disk
-        /// </summary>
-        /// <param name="disk"></param>
-        /// <returns></returns>
-        public void SetDiskColor(char disk)
-        {
-            // Set color based on the cell value
-            if (disk == 'X')
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-            }
-            else if (disk == 'O')
-            {
-                Console.ForegroundColor = ConsoleColor.Blue;
-            }
-            else
-            {
-                Console.ResetColor(); // Default color
-            }
-        }
 
         /// <summary>
         /// Set Player Turn
@@ -392,11 +483,12 @@ namespace Connect_Four
         {
             Player currentPlayer = _isPlayerOneTurn ? _player1 : _player2;
             Console.Write($"\nYour turn, Player {currentPlayer.Name} (");
-            SetDiskColor(currentPlayer.Disk);
+            GameMenu.DisplayMessageWithColor(currentPlayer.Disk);
             Console.Write(currentPlayer.Disk);
             Console.ResetColor();
             Console.WriteLine(").");
-            Console.Write("Enter a column number (1-7) and press Enter: ");
+
+            GameMenu.SetGameMessage(ConsoleColor.Cyan, "Enter a column number (1-7) and press Enter: ", false, false);
 
             try
             {
@@ -554,6 +646,23 @@ namespace Connect_Four
             }
 
             return false; // no win
+        }
+
+        /// <summary>
+        /// To check if the game is draw
+        /// </summary>
+        /// <returns></returns>
+        public bool IsDraw()
+        {
+            // If any column in top row is empty then the game is not draw
+            for (int col = 0; col < COLUMNS; col++)
+            {
+                if (board[0, col] == '#')
+                {
+                    return false;
+                }
+            }
+            return true; // all columns are full
         }
     }
 }
