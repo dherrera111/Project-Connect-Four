@@ -147,8 +147,10 @@ namespace Connect_Four
         /// </summary>
         public static void HumanVsAI()
         {
-            Console.Write("You chose Human VS AI \n");
-            Console.WriteLine("Game Start!");
+            GameMenu.SetGameMessage(ConsoleColor.DarkYellow, "\nYou chose Human vs AI mode — let the battle begin!\n");
+
+            HumanVsAIHandler game = new HumanVsAIHandler();
+            game.PlayTheGame();
         }
 
         /// <summary>
@@ -166,9 +168,71 @@ namespace Connect_Four
     //=========================================================
 
     /// <summary>
+    /// Game Common controller for Game Mode
+    /// </summary>
+    public static class GameModeHelper
+    {
+        public static bool PlayAgain()
+        {
+            GameMenu.SetGameMessage(ConsoleColor.White, "\nDo you want to play again? (Y/N): ", false, false);
+
+            string input = Console.ReadLine().Trim();
+
+            if (input.Equals("Y", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+            else
+            {
+                GameMenu.SetGameMessage(ConsoleColor.DarkYellow, "\nThank you for playing Connect Four! Returning to the Game Menu... Please wait.", true, true);
+                Console.Clear();
+                GameMenu.ShowMenu();
+            }
+            return false;
+        }
+
+        public static void DisplayVictoryMessage(GameBoard gameBoard, bool isPlayerOneTurn, Player player1, Player player2)
+        {
+            Console.Clear();
+            gameBoard.DisplayGameBoard();
+
+            // Display the congratulatory message with player info
+            Console.WriteLine($"\nVictory!\n");
+            Console.Write("Congratulations, ");
+
+            // Set the winner's disk color
+            if (isPlayerOneTurn)
+            {
+                GameMenu.DisplayMessageWithColor(player1.Disk);
+                Console.Write($"{player1.Name} ({player1.Disk})");
+            }
+            else
+            {
+                GameMenu.DisplayMessageWithColor(player2.Disk);
+                Console.Write($"{player2.Name} ({player2.Disk})");
+            }
+
+            Console.ResetColor();
+
+            Console.WriteLine("! You’re the Connect Four Champion!!!\n");
+
+            Console.ResetColor();
+        }
+
+        public static void DisplayDrawMessage(GameBoard gameBoard)
+        {
+            Console.Clear();
+            gameBoard.DisplayGameBoard();
+
+            GameMenu.SetGameMessage(ConsoleColor.DarkYellow, "\nIt's a Draw!\n");
+            GameMenu.SetGameMessage(ConsoleColor.Yellow, "Great game, and well played to both challengers!");
+        }
+    }
+
+    /// <summary>
     /// The human vs. human handler: manages a human vs. human game
     /// </summary>
-    public class HumanVsHumanHandler
+    public class HumanVsHumanHandler : IConnectFour
     {
         private HumanPlayer _player1; // 'X'
         private HumanPlayer _player2; // 'O'
@@ -233,30 +297,14 @@ namespace Connect_Four
                     // check if win
                     if (_gameBoard.IsLastMoveWin(row, column))
                     {
-                        DisplayVictoryMessage();
+                        GameModeHelper.DisplayVictoryMessage(_gameBoard, _isPlayerOneTurn, _player1, _player2);
                         isPlayOver = true;
-
-                        // ask if players want to play again
-                        if (PlayAgain())
-                        {
-                            isPlayOver = false;
-                            _gameBoard.InitializeBoard();
-                            _gameBoard.SetPlayerTurn(true);
-                        }
                     }
                     // check if the board is full then it's draw
                     else if (_gameBoard.IsDraw())
                     {
-                        DisplayDrawMessage();
+                        GameModeHelper.DisplayDrawMessage(_gameBoard);
                         isPlayOver = true;
-
-                        // ask if players want to play again
-                        if (PlayAgain())
-                        {
-                            isPlayOver = false;
-                            _gameBoard.InitializeBoard();
-                            _gameBoard.SetPlayerTurn(true);
-                        }
                     }
                     // play continues
                     else
@@ -267,64 +315,101 @@ namespace Connect_Four
                 }
                 else
                 {
-                    GameMenu.SetGameMessage(ConsoleColor.Red, "\nOopppss.. Invalid move. Please try again.");
+                    GameMenu.SetGameMessage(ConsoleColor.Red, "\nOopppss.. Invalid move. Please try again.", true);
                 }
             }
+
+            // ask if players want to play again
+            if (GameModeHelper.PlayAgain())
+            {
+                isPlayOver = false;
+                _gameBoard.InitializeBoard();
+                _gameBoard.SetPlayerTurn(true);
+                PlayTheGame();
+            }
+        }
+    }
+
+    /// <summary>
+    /// The human vs. AI handler: manages a human vs. AI game
+    /// </summary>
+    public class HumanVsAIHandler : IConnectFour
+    {
+        private HumanPlayer _player1; // 'X'
+        private AIPlayer _player2; // 'O'
+        private GameBoard _gameBoard;
+        private bool _isPlayerOneTurn;
+
+        /// <summary>
+        /// Constructor: Initialize a new human vs. AI game
+        /// </summary>
+        public HumanVsAIHandler()
+        {
+            RegisterPlayers();
+
+            _gameBoard = new GameBoard();
+            _gameBoard.InitializeBoard();
+            _gameBoard.SetupHumanVsAIPlayers(_player1, _player2);
+            _isPlayerOneTurn = true; // make sure that player one goes first
+            _gameBoard.SetPlayerTurn(_isPlayerOneTurn);
         }
 
-        private void DisplayVictoryMessage()
+        private void RegisterPlayers()
         {
-            Console.Clear();
-            _gameBoard.DisplayGameBoard();
-
-            // Display the congratulatory message with player info
-            Console.WriteLine($"\nVictory!\n");
-            Console.Write("Congratulations, ");
-
-            // Set the winner's disk color
-            if (_isPlayerOneTurn)
+            // Ask for Player 1's name (assigned 'X').
+            Console.Write("Enter your name Player 1: ");
+            string playerName1 = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(playerName1))
             {
-                GameMenu.DisplayMessageWithColor(_player1.Disk);
-                Console.Write($"{_player1.Name} ({_player1.Disk})");
+                playerName1 = "Connect 4 Player 1";
+                Console.WriteLine($"The system automatically set player 1 name to: '{playerName1}' ");
             }
-            else
-            {
-                GameMenu.DisplayMessageWithColor(_player2.Disk);
-                Console.Write($"{_player2.Name} ({_player2.Disk})");
-            }
+            _player1 = new HumanPlayer(playerName1, 'X');
 
-            Console.WriteLine("! You’re the Connect Four Champion!!!\n");
-            
-            // reset color
-            Console.ResetColor();
+            // Automatic registration for AI
+            _player2 = new AIPlayer("AI", 'O');
         }
 
-        private void DisplayDrawMessage()
+        /// <summary>
+        /// Start of the Game Loop - Human vs. AI Mode
+        /// </summary>
+        public void PlayTheGame()
         {
-            Console.Clear();
-            _gameBoard.DisplayGameBoard();
+            bool isPlayOver = false;
 
-            GameMenu.SetGameMessage(ConsoleColor.DarkYellow, "\nIt's a Draw!\n");
-            GameMenu.SetGameMessage(ConsoleColor.Yellow, "Great game, and well played to both challengers!");
-        }
-
-        private bool PlayAgain()
-        {
-            GameMenu.SetGameMessage(ConsoleColor.White, "\nDo you want to play again? (Y/N): ", false, false);
-
-            string input = Console.ReadLine().Trim();
-
-            if (input.Equals("Y", StringComparison.OrdinalIgnoreCase))
+            while (!isPlayOver)
             {
-                return true;
+                Console.WriteLine("Not implemented yet.");
+                isPlayOver = true;
+                // clear the board
+                // show the current board
+
+                // check if humans turn
+                    // get player move
+                    // is valid move
+                    // dropdisk
+                    // check if last move win
+                    // check if draw
+                    // other plays must go on
+
+                // else AI turns
+                    // get AI player move - already implemented..
+                    // drop disk
+                    // clear the board
+                    // show the current board
+                    // check if last move win
+                    // check if draw
+                    // other plays must go on
             }
-            else
+
+            // ask if players want to play again
+            if (GameModeHelper.PlayAgain())
             {
-                GameMenu.SetGameMessage(ConsoleColor.DarkYellow, "\nThank you for playing Connect Four! Returning to the Game Menu... Please wait.", true, true);
-                Console.Clear();
-                GameMenu.ShowMenu();
+                isPlayOver = false;
+                _gameBoard.InitializeBoard();
+                _gameBoard.SetPlayerTurn(true);
+                PlayTheGame();
             }
-            return false;
         }
     }
 
@@ -366,7 +451,7 @@ namespace Connect_Four
     public class HumanPlayer : Player
     {
         /// <summary>
-        /// calls the parent class constructor
+        ///  Initialize the parent constructor
         /// </summary>
         /// <param name="name">The human player name</param>
         /// <param name="disk">X or O</param>
@@ -375,12 +460,43 @@ namespace Connect_Four
         }
     }
 
-    // TODO: To implement AI Player here...
+    /// <summary>
+    /// The AI player 
+    /// </summary>
     public class AIPlayer : Player
     {
+        /// <summary>
+        /// Initialize the parent constructor
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="disk"></param>
         public AIPlayer(string name, char disk) : base(name, disk)
         {
         }
+
+        // AI generate its own move - random number between 0 to 6
+        public int GetAIMove(GameBoard board)
+        {
+            Random random = new Random();
+            int column;
+
+            do
+            {
+                column = random.Next(GameBoard.COLUMNS); // 0 to 6, COLUMNS = 7
+            } while (!board.IsValidMove(column));
+
+            return column;
+        }
+
+    }
+
+    /// <summary>
+    /// This is the contract to be implemented classes
+    /// Defines what the game must be able to do ...
+    /// </summary>
+    interface IConnectFour
+    {
+        void PlayTheGame();
     }
 
     //=========================================================
@@ -453,7 +569,6 @@ namespace Connect_Four
             // These are the column numbers at the bottom
             Console.WriteLine("  1  2  3  4  5  6  7  \n");
         }
-
 
         /// <summary>
         /// Set Player Turn
@@ -530,10 +645,10 @@ namespace Connect_Four
         }
 
         /// <summary>
-        /// To check if the move is valid
+        /// To check if the move is valid or within the board game
         /// </summary>
         /// <param name="column"></param>
-        /// <returns></returns>
+        /// <returns>return true if within the board game otherwise false.</returns>
         public bool IsValidMove(int column)
         {
             // validte if the col within the board boundaries
@@ -556,9 +671,9 @@ namespace Connect_Four
         {
             char playerDisk = _isPlayerOneTurn ? _player1.Disk : _player2.Disk;
 
-            // ==================
+            // ======================================================
             // HORIZONTAL WINS (4 in a row, from left to right)
-            // ==================
+            // ======================================================
 
             int count = 0;
 
@@ -578,9 +693,9 @@ namespace Connect_Four
                 }
             }
 
-            // ==================
+            // ======================================================
             // VERTICAL WINS (4 in a row, from top to bottom)
-            // ==================
+            // ======================================================
             count = 0;
 
             // Loop through from row - 3 to row + 3
@@ -599,9 +714,9 @@ namespace Connect_Four
                 }
             }
 
-            // ==================
+            // ======================================================
             // DIAGONAL WINS (top left to bottom right)
-            // ==================
+            // ======================================================
             count = 0;
             int startRow = row - Math.Min(row, col); // starting row position
             int startCol = col - Math.Min(row, col); // starting col position
@@ -622,9 +737,9 @@ namespace Connect_Four
                 }
             }
 
-            // ==================
+            // ======================================================
             // DIAGONAL WINS (top right to bottom left)
-            // ==================
+            // ======================================================
             count = 0;
             startRow = row - Math.Min(row, COLUMNS - 1 - col); // starting row position
             startCol = col + Math.Min(row, COLUMNS - 1 - col); // starting col position
@@ -663,6 +778,17 @@ namespace Connect_Four
                 }
             }
             return true; // all columns are full
+        }
+
+        /// <summary>
+        /// To set up the Player object to use the player's name and disk in this class.
+        /// </summary>
+        /// <param name="player1"></param>
+        /// <param name="player2"></param>
+        public void SetupHumanVsAIPlayers(HumanPlayer player1, AIPlayer player2)
+        {
+            _player1 = player1;
+            _player2 = player2;
         }
     }
 }
