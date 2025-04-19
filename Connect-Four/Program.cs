@@ -400,7 +400,7 @@ namespace Connect_Four
                             GameModeHelper.DisplayDrawMessage(_gameBoard);
                             isPlayOver = true;
                         }
-                        else// other plays must go on
+                        else// plays must go on
                         {
                             _isPlayerOneTurn = !_isPlayerOneTurn;
                             _gameBoard.SetPlayerTurn(_isPlayerOneTurn);
@@ -412,26 +412,33 @@ namespace Connect_Four
                     }
                 }
                 else// else AI turns
-                {                 
+                {
+                    GameMenu.SetGameMessage(ConsoleColor.Yellow, "AI is thinking its next move... hang tight!", true, true);
+
+                    Console.Clear();
                     _gameBoard.DisplayGameBoard();// show the current board
-                    int aiColumn = _player2.GetAIMove(_gameBoard);// get AI player move - already implemented..
+
+                    int aiColumn = _player2.GetAIMove(_gameBoard);// get AI player move
                     int row = _gameBoard.DropDisk(aiColumn);// drop disk
+
                     if (_gameBoard.IsLastMoveWin(row, aiColumn))// check if last move win
                     {
                         GameModeHelper.DisplayVictoryMessage(_gameBoard, !_isPlayerOneTurn, _player1, _player2);//Display victory message
                         isPlayOver = true;
-                    }else if(_gameBoard.IsDraw())// check if draw
+                    }
+                    else if(_gameBoard.IsDraw())// check if draw
                     {
                         GameModeHelper.DisplayDrawMessage(_gameBoard);
                         isPlayOver = true;
                     }
-                    else// other plays must go on
+                    else// plays must go on
                     {
-                        _isPlayerOneTurn = true;
+                        _isPlayerOneTurn = !_isPlayerOneTurn;
                         _gameBoard.SetPlayerTurn(_isPlayerOneTurn);
                     }
                 }                                                                                              
             }
+
             // ask if players want to play again
             if (GameModeHelper.PlayAgain())
             {
@@ -708,7 +715,7 @@ namespace Connect_Four
             int count = 0;
 
             // Loop in columns from col - 1 to col + 3 = making sure that index stays within board
-            for (int i = Math.Max(0, col - 1); i <= Math.Min(col + 3, COLUMNS - 1); i++)
+            for (int i = Math.Max(0, col - 3); i <= Math.Min(col + 3, COLUMNS - 1); i++)
             {
                 // check if the current cell at row contains the player disk
                 if (board[row, i] == playerDisk)
