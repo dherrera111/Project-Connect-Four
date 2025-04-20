@@ -159,6 +159,7 @@ namespace Connect_Four
         public static void Exit()
         {
             Console.WriteLine("\nExiting game... Thank you for playing Connect Four!");
+            Environment.Exit(0);
             return;
         }
     }
