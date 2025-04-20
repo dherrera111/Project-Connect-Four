@@ -382,8 +382,6 @@ namespace Connect_Four
             {
                 Console.Clear();// clear the board               
                 _gameBoard.DisplayGameBoard();// show the current board
-
-
                 if (_isPlayerOneTurn) // check if humans turn
                 {
                     int column = _gameBoard.GetPlayerMove();// get player move
