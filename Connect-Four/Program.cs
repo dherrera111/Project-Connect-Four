@@ -549,14 +549,14 @@ namespace Connect_Four
         public const int ROWS = 6;
         public const int COLUMNS = 7;
 
-        public char[,] board;
+        private char[,] _board;
         private bool _isPlayerOneTurn; // sets whose turn it is
         private HumanPlayer _player1; // first player always human
         private Player _player2; // second player can be human or AI, use the parent or common class
 
         public GameBoard()
         {
-            board = new char[ROWS, COLUMNS]; // 2D array
+            _board = new char[ROWS, COLUMNS]; // 2D array
             InitializeBoard(); // fill it with # spaces
         }
 
@@ -570,7 +570,7 @@ namespace Connect_Four
             {
                 for (int col = 0; col < COLUMNS; col++)
                 {
-                    board[row, col] = '#'; // set # each cell
+                    _board[row, col] = '#'; // set # each cell
                 }
             }
         }
@@ -592,9 +592,9 @@ namespace Connect_Four
                 for (int col = 0; col < COLUMNS; col++)
                 {
                     // set the disk color
-                    GameMenu.DisplayMessageWithColor(board[row, col]);
+                    GameMenu.DisplayMessageWithColor(_board[row, col]);
 
-                    Console.Write($" {board[row, col]} ");
+                    Console.Write($" {_board[row, col]} ");
 
                     // Reset color after each cell
                     Console.ResetColor();
@@ -666,13 +666,13 @@ namespace Connect_Four
             // start from the bottom row and move up til find empty cell
             for (int i = ROWS - 1; i >= 0; i--)
             {
-                if (board[i, col] == '#') // this is the empty cell
+                if (_board[i, col] == '#') // this is the empty cell
                 {
                     // get the current player's disk, player 1 is X, player 2 is O
                     Player currentPlayer = _isPlayerOneTurn ? _player1 : _player2;
 
                     // place the player's symbol in the empty cell
-                    board[i, col] = currentPlayer.Disk;
+                    _board[i, col] = currentPlayer.Disk;
                     row = i; // row we placed the disk
                     break;
                 }
@@ -695,7 +695,7 @@ namespace Connect_Four
             }
 
             // check the column is empty
-            return board[0, column] == '#';
+            return _board[0, column] == '#';
         }
 
         /// <summary>
@@ -718,7 +718,7 @@ namespace Connect_Four
             for (int i = Math.Max(0, col - 3); i <= Math.Min(col + 3, COLUMNS - 1); i++)
             {
                 // check if the current cell at row contains the player disk
-                if (board[row, i] == playerDisk)
+                if (_board[row, i] == playerDisk)
                 {
                     count++; // increment the count
                     if (count == 4) return true; // win
@@ -739,7 +739,7 @@ namespace Connect_Four
             for (int j = Math.Max(0, row - 3); j <= Math.Min(row + 3, ROWS - 1); j++)
             {
                 // check the current cell contains the player disk
-                if (board[j, col] == playerDisk)
+                if (_board[j, col] == playerDisk)
                 {
                     count++; // increment
                     if (count == 4) return true; // win
@@ -762,7 +762,7 @@ namespace Connect_Four
             for (int i = 0; i < Math.Min(ROWS - startRow, COLUMNS - startCol); i++)
             {
                 // check the current cell contains the player disk
-                if (board[startRow + i, startCol + i] == playerDisk)
+                if (_board[startRow + i, startCol + i] == playerDisk)
                 {
                     count++; // increment
                     if (count == 4) return true; // win
@@ -785,7 +785,7 @@ namespace Connect_Four
             for (int i = 0; i < Math.Min(ROWS - startRow, startCol + 1); i++)
             {
                 // check the current cell contains the player disk
-                if (board[startRow + i, startCol - i] == playerDisk)
+                if (_board[startRow + i, startCol - i] == playerDisk)
                 {
                     count++; // increment
                     if (count == 4) return true; // win
@@ -809,7 +809,7 @@ namespace Connect_Four
             // If any column in top row is empty then the game is not draw
             for (int col = 0; col < COLUMNS; col++)
             {
-                if (board[0, col] == '#')
+                if (_board[0, col] == '#')
                 {
                     return false;
                 }
