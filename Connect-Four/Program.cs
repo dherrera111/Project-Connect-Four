@@ -325,7 +325,8 @@ namespace Connect_Four
             {
                 isPlayOver = false;
                 _gameBoard.InitializeBoard();
-                _gameBoard.SetPlayerTurn(true);
+                _isPlayerOneTurn = true;
+                _gameBoard.SetPlayerTurn(_isPlayerOneTurn);
                 PlayTheGame();
             }
         }
@@ -443,7 +444,8 @@ namespace Connect_Four
             {
                 isPlayOver = false;
                 _gameBoard.InitializeBoard();
-                _gameBoard.SetPlayerTurn(true);
+                _isPlayerOneTurn = true;
+                _gameBoard.SetPlayerTurn(_isPlayerOneTurn);
                 PlayTheGame();
             }
         }
