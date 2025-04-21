@@ -340,6 +340,7 @@ namespace Connect_Four
         private AIPlayer _player2; // 'O'
         private GameBoard _gameBoard;
         private bool _isPlayerOneTurn;
+        
 
         /// <summary>
         /// Constructor: Initialize a new human vs. AI game
@@ -380,27 +381,61 @@ namespace Connect_Four
 
             while (!isPlayOver)
             {
-                Console.WriteLine("Not implemented yet.");
-                isPlayOver = true;
-                // clear the board
-                // show the current board
+                Console.Clear();// clear the board               
+                _gameBoard.DisplayGameBoard();// show the current board
+                if (_isPlayerOneTurn) // check if humans turn
+                {
+                    int column = _gameBoard.GetPlayerMove();// get player move
+                    if (_gameBoard.IsValidMove(column))// is valid move
+                    {
+                        int row = _gameBoard.DropDisk(column);// dropdisk
+                        if (_gameBoard.IsLastMoveWin(row, column)) // check if last move win
+                        {
+                            GameModeHelper.DisplayVictoryMessage(_gameBoard, _isPlayerOneTurn, _player1, _player2);//Display victory message
+                            isPlayOver = true;
+                        }
+                        else if (_gameBoard.IsDraw())// check if draw
+                        {
+                            GameModeHelper.DisplayDrawMessage(_gameBoard);
+                            isPlayOver = true;
+                        }
+                        else// plays must go on
+                        {
+                            _isPlayerOneTurn = !_isPlayerOneTurn;
+                            _gameBoard.SetPlayerTurn(_isPlayerOneTurn);
+                        }
+                    }
+                    else
+                    {
+                        GameMenu.SetGameMessage(ConsoleColor.Red, "\nOopppss.. Invalid move. Please try again.", true);
+                    }
+                }
+                else// else AI turns
+                {
+                    GameMenu.SetGameMessage(ConsoleColor.Yellow, "AI is thinking its next move... hang tight!", true, true);
 
-                // check if humans turn
-                    // get player move
-                    // is valid move
-                    // dropdisk
-                    // check if last move win
-                    // check if draw
-                    // other plays must go on
+                    Console.Clear();
+                    _gameBoard.DisplayGameBoard();// show the current board
 
-                // else AI turns
-                    // get AI player move - already implemented..
-                    // drop disk
-                    // clear the board
-                    // show the current board
-                    // check if last move win
-                    // check if draw
-                    // other plays must go on
+                    int aiColumn = _player2.GetAIMove(_gameBoard);// get AI player move
+                    int row = _gameBoard.DropDisk(aiColumn);// drop disk
+
+                    if (_gameBoard.IsLastMoveWin(row, aiColumn))// check if last move win
+                    {
+                        GameModeHelper.DisplayVictoryMessage(_gameBoard, !_isPlayerOneTurn, _player1, _player2);//Display victory message
+                        isPlayOver = true;
+                    }
+                    else if(_gameBoard.IsDraw())// check if draw
+                    {
+                        GameModeHelper.DisplayDrawMessage(_gameBoard);
+                        isPlayOver = true;
+                    }
+                    else// plays must go on
+                    {
+                        _isPlayerOneTurn = !_isPlayerOneTurn;
+                        _gameBoard.SetPlayerTurn(_isPlayerOneTurn);
+                    }
+                }                                                                                              
             }
 
             // ask if players want to play again
@@ -545,7 +580,7 @@ namespace Connect_Four
         public void DisplayGameBoard()
         {
             GameMenu.SetGameMessage(ConsoleColor.Yellow, "======= Welcome to Connect Four Game by Herrera & Leung Co. =======\n");
-            
+
             GameMenu.SetGameMessage(ConsoleColor.DarkYellow, "\nConnect 4 Game Development Project:\n");
 
             // loop through each cell with the #
@@ -679,7 +714,7 @@ namespace Connect_Four
             int count = 0;
 
             // Loop in columns from col - 1 to col + 3 = making sure that index stays within board
-            for(int i = Math.Max(0, col - 1); i <= Math.Min(col + 3, COLUMNS - 1); i++)
+            for (int i = Math.Max(0, col - 3); i <= Math.Min(col + 3, COLUMNS - 1); i++)
             {
                 // check if the current cell at row contains the player disk
                 if (_board[row, i] == playerDisk)
