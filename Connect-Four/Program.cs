@@ -316,7 +316,7 @@ namespace Connect_Four
                 }
                 else
                 {
-                    GameMenu.SetGameMessage(ConsoleColor.Red, "\nOopppss.. Invalid move. Please try again.", true);
+                    GameMenu.SetGameMessage(ConsoleColor.Yellow, "\nWhoops! That move didn’t work — maybe the column is full or it's not valid. Give it another shot!", true);
                 }
             }
 
